@@ -74,6 +74,14 @@ void list_show(list list)
  *
  * This array grows as elements are added
  */
+struct st_dynamic_array {
+	size_t alloc;
+	size_t used;
+	int * values;
+};
+
+typedef struct st_dynamic_array darray;
+
 void darray_alloc(darray * a)
 {
 	a->alloc = 64;
