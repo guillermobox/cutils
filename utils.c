@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "utils.h"
 
 /*
  * List structure
@@ -175,16 +174,34 @@ int btree_check(btree root, int val)
 		return 0;
 };
 
-void btree_show(btree root, int indent)
+void btree_dotshow(btree root)
 {
-	if (root == NULL)
+	if (root == NULL) {
 		return;
-	int i = indent;
-	while (i--)
-		putchar(' ');
-	printf("%d\n", root->value);
-	btree_show(root->left, indent + 2);
-	btree_show(root->right, indent + 2);
+	}
+	printf("\"%p\" [label=%d, shape=circle, fixedsize=true]\n", root, root->value);
+	btree_dotshow(root->left);
+	btree_dotshow(root->right);
+	if (root->left) {
+		printf("\"%p\" -> \"%p\"\n", root, root->left);
+	} else {
+		printf("\"%p\" -> \"%p-left\"\n", root, root);
+		printf("\"%p-left\" [label=\"/\", shape=point]\n", root);
+	}
+	if (root->right) {
+		printf("\"%p\" -> \"%p\"\n", root, root->right);
+	} else {
+		printf("\"%p\" -> \"%p-right\"\n", root, root);
+		printf("\"%p-right\" [label=\"/\", shape=point]\n", root);
+	}
+};
+
+void btree_show(btree root)
+{
+	printf("digraph {\n");
+	printf("node [fontname=sans]\n");
+	btree_dotshow(root);
+	printf("}\n");
 };
 
 void btree_plain_show(btree root)
@@ -230,3 +247,17 @@ typedef btree set;
 #define set_add btree_unique_add
 #define set_new btree_new_node
 #define set_show btree_show
+
+int main(int argc, char *argv[])
+{
+	set s;
+
+	s = set_new(5);
+	set_add(s, 10);
+	set_add(s, 2);
+	set_add(s, 7);
+
+	set_show(s);
+
+	return 0;
+};
