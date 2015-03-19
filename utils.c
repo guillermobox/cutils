@@ -2,120 +2,35 @@
 #include <stdlib.h>
 #include <math.h>
 
-/*
- * List structure
- *
- * Single linked list structure
- */
-struct st_list {
-	int *value;
-	int size;
-};
-
-typedef struct st_list *list;
-
-list list_new(void)
-{
-	list l;
-	l = malloc(sizeof(struct st_list));
-	l->value = NULL;
-	l->size = 0;
-	return l;
-}
-
-void list_del(list list)
-{
-	if (list != NULL) {
-		if (list->value != NULL)
-			free(list->value);
-		free(list);
-	}
-}
-
-int list_pop(list list, int index)
-{
-	int value, i, j;
-	if (index >= list->size) {
-		printf("WOP! Accesing element %d of a %d list\n", index, list->size);
-		exit(1);
-	}
-	value = list->value[index];
-	i = 0;
-	j = 0;
-	if (index != list->size - 1) {
-		for (i = 0; i < list->size; i++, j++) {
-			if (j == index)
-				j = j + 1;
-			list->value[i] = list->value[j];
-		}
-	}
-	list->size -= 1;
-	return value;
-}
-
-int list_push(list list, int value)
-{
-	list->size += 1;
-	list->value = realloc(list->value, list->size * sizeof(int));
-	list->value[list->size - 1] = value;
-}
-
-void list_show(list list)
-{
-	int i;
-	for (i = 0; i < list->size; i++)
-		printf("%d ", list->value[i]);
-	printf("\n");
-}
+#include "utils.h"
 
 /*
  * Dynamic array
  *
  * This array grows as elements are added
  */
-struct st_dynamic_array {
-	size_t alloc;
-	size_t used;
-	int * values;
-};
-
-typedef struct st_dynamic_array darray;
-
-void darray_alloc(darray * a)
+void darray_new(darray a)
 {
 	a->alloc = 64;
 	a->used = 0;
-	a->values = malloc(a->alloc * sizeof(int));
+	a->values = malloc(a->alloc * sizeof(DARRAY_TYPE));
 };
 
-void darray_free(darray * a)
+void darray_destroy(darray a)
 {
 	free(a->values);
 };
 
-void darray_add(darray * a, int val)
+void darray_add(darray a, DARRAY_TYPE val)
 {
 	if (a->used == a->alloc) {
 		a->alloc *= 2;
-		a->values = realloc(a->values, a->alloc * sizeof(int));
+		a->values = realloc(a->values, a->alloc * sizeof(DARRAY_TYPE));
 	}
 	a->values[a->used++] = val;
 };
 
-/*
- * Binary tree
- *
- * Binary tree implementation
- */
-struct st_btree_node {
-	struct st_btree_node *left;
-	struct st_btree_node *right;
-	int value;
-};
-
-typedef struct st_btree_node *btree;
-
-btree btree_new_node(int val)
+btree btree_new_node(TREE_TYPE val)
 {
 	btree b = (struct st_btree_node *) malloc(sizeof(struct st_btree_node));
 	b->left = NULL;
@@ -124,30 +39,30 @@ btree btree_new_node(int val)
 	return b;
 };
 
-void btree_del(btree root)
+void btree_destroy(btree root)
 {
 	if (root->left)
-		btree_del(root->left);
+		btree_destroy(root->left);
 	if (root->right)
-		btree_del(root->right);
+		btree_destroy(root->right);
 	free(root);
 };
 
-btree btree_add_left(btree root, int val)
+btree btree_add_left(btree root, TREE_TYPE val)
 {
 	btree new = btree_new_node(val);
 	root->left = new;
 	return root->left;
 };
 
-btree btree_add_right(btree root, int val)
+btree btree_add_right(btree root, TREE_TYPE val)
 {
 	btree new = btree_new_node(val);
 	root->right = new;
 	return root->right;
 };
 
-btree btree_sorted_add(btree root, int val)
+btree btree_sorted_add(btree root, TREE_TYPE val)
 {
 	if (val <= root->value) {
 		if (root->left == NULL)
@@ -162,7 +77,7 @@ btree btree_sorted_add(btree root, int val)
 	}
 };
 
-int btree_check(btree root, int val)
+int btree_check(btree root, TREE_TYPE val)
 {
 	if (val == root->value)
 		return 1;
@@ -213,7 +128,7 @@ void btree_plain_show(btree root)
 		btree_plain_show(root->right);
 };
 
-btree btree_unique_add(btree root, int val)
+btree btree_unique_add(btree root, TREE_TYPE val)
 {
 	if (val == root->value)
 		return root;
@@ -235,29 +150,4 @@ int btree_length(btree root)
 	if (root == NULL)
 		return 0;
 	return btree_length(root->left) + btree_length(root->right) + 1;
-};
-
-/*
- * Set
- *
- * A set implemented using a binary tree.
- */
-typedef btree set;
-
-#define set_add btree_unique_add
-#define set_new btree_new_node
-#define set_show btree_show
-
-int main(int argc, char *argv[])
-{
-	set s;
-
-	s = set_new(5);
-	set_add(s, 10);
-	set_add(s, 2);
-	set_add(s, 7);
-
-	set_show(s);
-
-	return 0;
 };
