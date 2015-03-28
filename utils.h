@@ -3,6 +3,10 @@
 
 #include <stdlib.h>
 
+#define SHOW(function, arguments) printf("%s%s = %d\n", #function, #arguments, function arguments);
+void init_primes();
+int is_prime(int x);
+
 /*
  * Dynamic array
  *
