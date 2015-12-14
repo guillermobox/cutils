@@ -96,13 +96,13 @@ void btree_dotshow(btree root)
 	}
 	printf("\"%p\" [label=%d, shape=circle, fixedsize=true]\n", root, root->value);
 	btree_dotshow(root->left);
-	btree_dotshow(root->right);
 	if (root->left) {
 		printf("\"%p\" -> \"%p\"\n", root, root->left);
 	} else {
 		printf("\"%p\" -> \"%p-left\"\n", root, root);
 		printf("\"%p-left\" [label=\"/\", shape=point]\n", root);
 	}
+	btree_dotshow(root->right);
 	if (root->right) {
 		printf("\"%p\" -> \"%p\"\n", root, root->right);
 	} else {
