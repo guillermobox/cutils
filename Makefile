@@ -1,17 +1,15 @@
-CFLAGS += -g -Wall
+CFLAGS += -Wall -pedantic -O2
+Q := @
 
-all: main_head main_open main_linked
+all: darray.o
 
-main_head: hashset_head.o main.o
-	$(CC) $^ -o $@
+darray.o: darray.c
 
-main_open: hashset_open.o main.o
-	$(CC) $^ -o $@
-
-main_linked: hashset_linked.o main.o
-	$(CC) $^ -o $@
+%.o: %.c
+	@echo "  CC  " $@
+	$(Q)$(CC) -c -o $@ $< $(CFLAGS)
 
 .PHONY: clean all
 
 clean:
-	rm -f *.o main_*
+	rm -f *.o
