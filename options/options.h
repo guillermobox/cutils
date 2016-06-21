@@ -25,10 +25,10 @@ struct st_option {
 /*
  * Use this macros to define the elements of the options structure
  */
-#define FLAG_BOOL(flag, longflag, description, variable, default)                { flag, longflag, description, NULL, TYPE_BOOL, variable, default}
+#define FLAG_BOL(flag, longflag, description, variable, default)                { flag, longflag, description, NULL, TYPE_BOOL, variable, default}
 #define FLAG_INT(flag, longflag, description, placeholder, variable, default)    { flag, longflag, description, placeholder, TYPE_INT, variable, default}
-#define FLAG_FLOAT(flag, longflag, description, placeholder, variable, default)  { flag, longflag, description, placeholder, TYPE_FLOAT, variable, default}
-#define FLAG_STRING(flag, longflag, description, placeholder, variable, default) { flag, longflag, description, placeholder, TYPE_STRING, variable, default}
+#define FLAG_FLT(flag, longflag, description, placeholder, variable, default)  { flag, longflag, description, placeholder, TYPE_FLOAT, variable, default}
+#define FLAG_STR(flag, longflag, description, placeholder, variable, default) { flag, longflag, description, placeholder, TYPE_STRING, variable, default}
 #define PARAM_INT(longflag, description, variable, default)                      { '-',  longflag, description, NULL, TYPE_INT, variable, default}
 #define PARAM_STRING(longflag, description, variable, default)                   { '-',  longflag, description, NULL, TYPE_STRING, variable, default}
 #define OPTIONS_END {}

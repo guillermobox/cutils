@@ -6,19 +6,20 @@ int main(int argc, char *argv[])
 {
 	/* define the variables that you want to work with */
 	unsigned int verbosity, help;
-	unsigned long int n, m = 0;
+	unsigned long int n, m;
 	char *algorithm, *filename;
 	double tolerance;
 
 	/* create a structure with the flags and posicional parameters */
 	struct st_option myoptions[] = {
-		FLAG_BOOL('v', "verbose", "Set verbosity to print more information", &verbosity, NULL),
-		FLAG_BOOL('h', "help", "Show this usage information", &help, NULL),
+		FLAG_BOL('v', "verbose", "Set verbosity to print more information", &verbosity, NULL),
+		FLAG_BOL('h', "help", "Show this usage information", &help, NULL),
 		FLAG_INT('n', "rows", "Number of rows for the matrix", "ROWS", &n, NULL),
 		FLAG_INT('m', "cols", "Number of columns for the matrix", "COLS", &m, NULL),
-		FLAG_STRING('a', "algorithm", "Type of algorithm to run: general, symmetric", "TYPE", &algorithm, "general"),
-		FLAG_FLOAT('t', NULL, "Tolerance of the solevr", NULL, &tolerance, "1e-3"),
+		FLAG_STR('a', "algorithm", "Type of algorithm to run: general, symmetric", "TYPE", &algorithm, "general"),
+		FLAG_FLT('t', NULL, "Tolerance of the solevr", NULL, &tolerance, "1e-3"),
 		PARAM_STRING("matrix", "File to write the matrix into", &filename, NULL),
+		PARAM_STRING("method", "Simulation method to use", &filename, "cgstab"),
 		OPTIONS_END
 	};
 
@@ -45,4 +46,5 @@ int main(int argc, char *argv[])
 	printf("%14s  %s\n", "matrix", filename);
 	printf("\n");
 
-};
+	return (EXIT_SUCCESS);
+}

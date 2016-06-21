@@ -22,15 +22,25 @@ do {\
 
 char option_err_msg[128];
 
-static void update_parse_error(struct st_option *option, unsigned int err)
+static void update_parse_error(struct st_option *option, unsigned int err, const char * value)
 {
+	static const char *types[] = { "bool", "int", "string", "float"};
+
+	switch (err) {
+		case ERR_UNKNOWN:
+			snprintf(option_err_msg, 128, "Unknown argument in command line: %s", value);
+			return;
+		case ERR_EXTRA_POSITIONAL:
+			snprintf(option_err_msg, 128, "Unexpected positional argument in command line: %s", value);
+			return;
+	}
 	if (IS_POSITIONAL(option)) {
 		switch (err) {
 			case ERR_REQUIRED:
 				snprintf(option_err_msg, 128, "Positional argument required: %s", option->flaglong);
 				break;
 			case ERR_CONVERSION:
-				snprintf(option_err_msg, 128, "Error converting the positional argument: %s", option->flaglong);
+				snprintf(option_err_msg, 128, "Error parsing the positional argument %s: %s is not a %s", option->flaglong, value, types[option->type]);
 				break;
 		}
 	} else {
@@ -39,10 +49,10 @@ static void update_parse_error(struct st_option *option, unsigned int err)
 				snprintf(option_err_msg, 128, "The flag -%c requires a parameter", option->flagshort);
 				break;
 			case ERR_CONVERSION:
-				snprintf(option_err_msg, 128, "Error converting the parameter for the flag -%c", option->flagshort);
+				snprintf(option_err_msg, 128, "Error parsing the parameter for the flag -%c: %s is not a %s", option->flagshort, value, types[option->type]);
 				break;
 			case ERR_LIMITS:
-				snprintf(option_err_msg, 128, "The parameter for the flag -%c is out of bounds", option->flagshort);
+				snprintf(option_err_msg, 128, "The parameter for the flag -%c is out of bounds: %s", option->flagshort, value);
 				break;
 		}
 	}
@@ -52,9 +62,16 @@ char * format_option(struct st_option *option)
 {
 	static char buffer[128];
 	char flagname[32];
+	char defaultvalue[32];
+
+	if (IT_HAS_DEFAULT(option)) {
+		snprintf(defaultvalue, 32, " [default %s]", option->def);
+	} else {
+		defaultvalue[0] = 0;
+	}
 
 	if (IS_POSITIONAL(option)) {
-		snprintf(buffer, 128, "  %-20s %s", option->flaglong, option->description);
+		snprintf(buffer, 128, "  %-20s %s%s", option->flaglong, option->description, defaultvalue);
 		return buffer;
 	}
 
@@ -77,7 +94,7 @@ char * format_option(struct st_option *option)
 		}
 	}
 
-	snprintf(buffer, 128, "%-32s %s", flagname, option->description);
+	snprintf(buffer, 128, "%-32s %s%s", flagname, option->description, defaultvalue);
 	return buffer;
 };
 
@@ -132,6 +149,57 @@ void options_usage(struct st_option *options, const char * program)
 	}
 };
 
+static int parse_int(struct st_option *option, const char *value, int found)
+{
+	unsigned long int number = 0;
+	if (found) {
+		char * ptr = (char *) value;;
+		number = strtol(value, &ptr, 10);
+		if ((number == LONG_MIN || number == LONG_MAX) && errno == ERANGE)
+			return ERR_LIMITS;
+		if (ptr == value || *ptr != '\0')
+			return ERR_CONVERSION;
+	}
+	*((unsigned long int*)option->data) = number;
+	return 0;
+};
+
+static int parse_float(struct st_option *option, const char *value, int found)
+{
+	double number = 0;
+	if (found) {
+		char * ptr;
+		ptr = (char *) value;
+		number = strtod(value, &ptr);
+		if (errno == ERANGE)
+			return ERR_LIMITS;
+		if (ptr == value || *ptr != '\0')
+			return ERR_CONVERSION;
+	}
+	*((double*)option->data) = number;
+	return 0;
+};
+
+static int parse_string(struct st_option *option, const char *value, int found)
+{
+	char * buffer = NULL;
+	if (found) {
+		buffer = malloc(strlen(value) + 1);
+		strcpy(buffer, value);
+	}
+	*((char**)option->data) = buffer;
+	return 0;
+};
+
+static int parse_bool(struct st_option *option, const char *value, int found)
+{
+	if (found)
+		*((int*) option->data) = 1;
+	else
+		*((int*) option->data) = 0;
+	return 0;
+};
+
 static int parse_value(struct st_option *option, const char *value, int found)
 {
 	if (IT_HAS_DEFAULT(option) && !found) {
@@ -147,45 +215,13 @@ static int parse_value(struct st_option *option, const char *value, int found)
 
 	switch (option->type) {
 		case TYPE_BOOL:
-			*((int*) option->data) = found;
-			break;
+			return parse_bool(option, value, found);
 		case TYPE_INT:
-			if (found) {
-				unsigned long int number;
-				char * ptr = (char *) value;;
-				number = strtol(value, &ptr, 10);
-				if ((number == LONG_MIN || number == LONG_MAX) && errno == ERANGE)
-					return ERR_LIMITS;
-				if (ptr == value || *ptr != '\0')
-					return ERR_CONVERSION;
-				*((unsigned long int*)option->data) = number;
-			} else {
-				*((unsigned long int*)option->data) = 0;
-			}
-			break;
+			return parse_int(option, value, found);
 		case TYPE_FLOAT:
-			if (found) {
-				double number;
-				char * ptr;
-				ptr = (char *) value;
-				number = strtod(value, &ptr);
-				if (errno == ERANGE)
-					return ERR_LIMITS;
-				if (ptr == value || *ptr != '\0')
-					return ERR_CONVERSION;
-				*((double*)option->data) = number;
-			} else {
-				*((double*)option->data) = 0;
-			}
-			break;
+			return parse_float(option, value, found);
 		case TYPE_STRING:
-			if (found) {
-				*((char**)option->data) = malloc(strlen(value) + 1);
-				strcpy( *((char**)option->data), value);
-			}
-			else {
-				*((char**)option->data) = NULL;
-			}
+			return parse_string(option, value, found);
 	}
 
 	return 0;
@@ -223,12 +259,10 @@ int options_parse(struct st_option *options, int argc, char *argv[])
 			}
 		}
 
-		if (option->data) {
-			err = parse_value(option, value, found);
-			if (err) {
-				update_parse_error(option, err);
-				return err;
-			}
+		err = parse_value(option, value, found);
+		if (err) {
+			update_parse_error(option, err, value);
+			return err;
 		}
 	}
 
@@ -237,6 +271,7 @@ int options_parse(struct st_option *options, int argc, char *argv[])
 	 */
 	for (argi = 1; argi < argc; argi++) {
 		if (argv[argi][0] == '-') {
+			update_parse_error(NULL, ERR_UNKNOWN, argv[argi]);
 			return ERR_UNKNOWN;
 		}
 	}
@@ -251,7 +286,7 @@ int options_parse(struct st_option *options, int argc, char *argv[])
 
 		err = parse_value(option, value, value != NULL);
 		if (err) {
-			update_parse_error(option, err);
+			update_parse_error(option, err, value);
 			return err;
 		}
 		argi++;
@@ -261,6 +296,7 @@ int options_parse(struct st_option *options, int argc, char *argv[])
 	 * any remaining positional argument is not expected
 	 */
 	if (argi != argc) {
+		update_parse_error(NULL, ERR_EXTRA_POSITIONAL, argv[argi]);
 		return ERR_EXTRA_POSITIONAL;
 	}
 
