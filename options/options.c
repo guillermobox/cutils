@@ -91,6 +91,8 @@ char * format_option(struct st_option *option)
 				strcat(flagname, " <float>");
 			else if (option->type == TYPE_STRING)
 				strcat(flagname, " <string>");
+			else
+				strcat(flagname, " <value>");
 		}
 	}
 
@@ -289,7 +291,8 @@ int options_parse(struct st_option *options, int argc, char *argv[])
 			update_parse_error(option, err, value);
 			return err;
 		}
-		argi++;
+		if (value != NULL)
+			argi++;
 	}
 
 	/*
