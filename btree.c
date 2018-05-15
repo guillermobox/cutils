@@ -1,3 +1,4 @@
+#include "btree.h"
 
 btree btree_new_node(TREE_TYPE val)
 {
@@ -6,7 +7,7 @@ btree btree_new_node(TREE_TYPE val)
 	b->right = NULL;
 	b->value = val;
 	return b;
-};
+}
 
 void btree_destroy(btree root)
 {
@@ -15,21 +16,21 @@ void btree_destroy(btree root)
 	if (root->right)
 		btree_destroy(root->right);
 	free(root);
-};
+}
 
 btree btree_add_left(btree root, TREE_TYPE val)
 {
 	btree new = btree_new_node(val);
 	root->left = new;
 	return root->left;
-};
+}
 
 btree btree_add_right(btree root, TREE_TYPE val)
 {
 	btree new = btree_new_node(val);
 	root->right = new;
 	return root->right;
-};
+}
 
 btree btree_sorted_add(btree root, TREE_TYPE val)
 {
@@ -44,7 +45,7 @@ btree btree_sorted_add(btree root, TREE_TYPE val)
 		else
 			return btree_sorted_add(root->right, val);
 	}
-};
+}
 
 int btree_check(btree root, TREE_TYPE val)
 {
@@ -56,29 +57,29 @@ int btree_check(btree root, TREE_TYPE val)
 		return btree_check(root->right, val);
 	else
 		return 0;
-};
+}
 
 void btree_dotshow(btree root)
 {
 	if (root == NULL) {
 		return;
 	}
-	printf("\"%p\" [label=%d, shape=circle, fixedsize=true]\n", root, root->value);
+	printf("\"%p\" [label=%d, shape=circle, fixedsize=true]\n", (void*)root, root->value);
 	btree_dotshow(root->left);
 	if (root->left) {
-		printf("\"%p\" -> \"%p\"\n", root, root->left);
+		printf("\"%p\" -> \"%p\"\n", (void*) root, (void*) root->left);
 	} else {
-		printf("\"%p\" -> \"%p-left\"\n", root, root);
-		printf("\"%p-left\" [label=\"/\", shape=point]\n", root);
+		printf("\"%p\" -> \"%p-left\"\n", (void*)root, (void*)root);
+		printf("\"%p-left\" [label=\"/\", shape=point]\n", (void*)root);
 	}
 	btree_dotshow(root->right);
 	if (root->right) {
-		printf("\"%p\" -> \"%p\"\n", root, root->right);
+		printf("\"%p\" -> \"%p\"\n", (void*)root, (void*)root->right);
 	} else {
-		printf("\"%p\" -> \"%p-right\"\n", root, root);
-		printf("\"%p-right\" [label=\"/\", shape=point]\n", root);
+		printf("\"%p\" -> \"%p-right\"\n", (void*)root, (void*)root);
+		printf("\"%p-right\" [label=\"/\", shape=point]\n", (void*)root);
 	}
-};
+}
 
 void btree_show(btree root)
 {
@@ -86,7 +87,7 @@ void btree_show(btree root)
 	printf("node [fontname=sans]\n");
 	btree_dotshow(root);
 	printf("}\n");
-};
+}
 
 void btree_plain_show(btree root)
 {
@@ -95,7 +96,7 @@ void btree_plain_show(btree root)
 	printf("%d ", root->value);
 	if (root->right)
 		btree_plain_show(root->right);
-};
+}
 
 btree btree_unique_add(btree root, TREE_TYPE val)
 {
@@ -112,12 +113,12 @@ btree btree_unique_add(btree root, TREE_TYPE val)
 		else
 			return btree_unique_add(root->right, val);
 	}
-};
+}
 
 int btree_length(btree root)
 {
 	if (root == NULL)
 		return 0;
 	return btree_length(root->left) + btree_length(root->right) + 1;
-};
+}
 

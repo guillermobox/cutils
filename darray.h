@@ -9,6 +9,7 @@
  * 	Create a structure st_darray
  * 	Initialize the structure with darray_aloc and destroy it with darray_free
  * 	Append elements to the end of the array with darray_insert
+ * 	Access elements directly using the .values pointer, up to .used
  */
 
 /* library configuration macros */
@@ -26,7 +27,7 @@ struct st_darray {
 };
 
 /* library interface */
-void darray_aloc(struct st_darray * a);
+void darray_alloc(struct st_darray * a);
 void darray_free(struct st_darray * a);
 void darray_insert(struct st_darray * a, DARRAY_TYPE val);
 

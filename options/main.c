@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 		FLAG_INT('n', "rows", "Number of rows for the matrix", "ROWS", &n, NULL),
 		FLAG_INT('m', "cols", "Number of columns for the matrix", "COLS", &m, NULL),
 		FLAG_STR('a', "algorithm", "Type of algorithm to run: general, symmetric", "TYPE", &algorithm, "general"),
-		FLAG_FLT('t', NULL, "Tolerance of the solevr", NULL, &tolerance, "1e-3"),
+		FLAG_FLT('t', NULL, "Tolerance of the solver", NULL, &tolerance, "1e-3"),
 		PARAM_STRING("matrix", "File to write the matrix into", &filename, NULL),
 		PARAM_STRING("method", "Simulation method to use", &method, "cgstab"),
 		OPTIONS_END
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	printf("%14s  %d\n", "verbosity", verbosity);
 	printf("%14s  %ld\n", "n", n);
 	printf("%14s  %ld\n", "m", m);
-	printf("%14s  %.2f\n", "tolerance", tolerance);
+	printf("%14s  %.4f\n", "tolerance", tolerance);
 	printf("%14s  %s\n", "algorithm", algorithm);
 	printf("%14s  %s\n", "matrix", filename);
 	printf("%14s  %s\n", "method", method);
